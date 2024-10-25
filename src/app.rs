@@ -21,10 +21,23 @@ impl ArtBoxApp {
 
 impl eframe::App for ArtBoxApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             self.title_bar.show(ui);
+            ui.separator();
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
             self.main_view.show(ui);
+            ui.separator();
+        });
+
+        egui::SidePanel::right("right_panel").show(ctx, |ui| {
             self.metadata.show(ui);
+            ui.separator();
+        });
+
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             self.footer.show(ui);
         });
     }
