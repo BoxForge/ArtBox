@@ -32,7 +32,7 @@ impl eframe::App for ArtBoxApp {
             ui.separator();
         });
 
-        egui::SidePanel::right("right_panel").show(ctx, |ui| {
+        egui::SidePanel::right("right_panel").resizable(false).show(ctx, |ui| {
             self.metadata.show(ui);
             ui.separator();
         });

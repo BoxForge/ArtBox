@@ -19,7 +19,7 @@ impl TitleBar {
 
     pub fn show(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.label(&self.title);
+            ui.heading(&self.title);
             let _tool_button = ui.button("Select Tool");
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                let _star_button = ui.button("★");
