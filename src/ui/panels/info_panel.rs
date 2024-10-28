@@ -2,7 +2,11 @@ use eframe::egui;
 use crate::ui::views::sprite_library_view::Item;
 
 pub trait InfoPanelTrait {
+<<<<<<< HEAD
     fn get_item(&self) -> Item;
+=======
+    fn get_item(&self) -> String;
+>>>>>>> f0ece1bd5f62e95ebc0b556f237d01605f49cde3
 
     fn show_info_panel(&self, ui: &mut egui::Ui) {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
