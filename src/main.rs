@@ -1,5 +1,6 @@
 mod app;
-mod ui;
+mod shared;
+mod tools;
 
 fn main() -> Result<(), eframe::Error>{
     let options = eframe::NativeOptions::default();
