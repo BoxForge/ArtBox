@@ -1,3 +1,3 @@
-use crate::ui::panels::{title_bar::TitleBarTrait, main_view::MainViewTrait, info_panel::InfoPanelTrait, footer::FooterTrait};
+use crate::shared::ui::ui_traits::UITrait;
 
-pub trait ToolView: TitleBarTrait + MainViewTrait + InfoPanelTrait + FooterTrait {}
+pub trait ToolView: UITrait {}

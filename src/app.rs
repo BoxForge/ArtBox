@@ -1,9 +1,9 @@
 use eframe::egui;
-use crate::ui::views as views;
-use crate::ui::views::sprite_library_view::SpriteLibraryView;
+use crate::tools::tool_view::ToolView;
+use crate::tools::spritelibrary::sprite_library_view::SpriteLibraryView;
 
 pub struct ArtBoxApp {
-    active_view: Box<dyn views::tool_view::ToolView>
+    active_view: Box<dyn ToolView>
 }
 
 impl ArtBoxApp {
@@ -17,24 +17,7 @@ impl ArtBoxApp {
 
 impl eframe::App for ArtBoxApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.active_view.show_ui(ctx);
         
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            self.active_view.show_title_bar(ui);
-            ui.separator();
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            self.active_view.show_main_view(ui);
-            ui.separator();
-        });
-
-        egui::SidePanel::right("right_panel").resizable(false).show(ctx, |ui| {
-            self.active_view.show_info_panel(ui);
-            ui.separator();
-        });
-
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            self.active_view.show_footer(ui);
-        });
     }
 }

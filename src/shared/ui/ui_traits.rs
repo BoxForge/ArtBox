@@ -1,51 +1,54 @@
 
 use eframe::egui;
-use crate::ui::views::sprite_library_view::Item;
+// use crate::tools::spritelibrary::sprite_library_view::Item;
 
-pub trait TitleBarTrait {
-    fn get_tool_title(&self) -> &String;
-    fn on_tool_selected(&mut self);
-    fn on_settings_clicked(&mut self);
-    fn on_icon_clicked(&mut self);
-    fn get_tool_title(&self) -> String;
-    fn set_tool_title(&mut self, title: String);
-    fn on_tool_selected(&mut self);
-    fn on_settings_clicked(&mut self);
-    fn on_icon_clicked(&mut self);
+pub trait UITrait {
+    fn show_ui(&mut self, ctx: &egui::Context) {
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            self.show_title_bar(ui);
+            ui.separator();
+        });
 
+        egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_main_panel(ui);
+            ui.separator();
+        });
+
+        egui::SidePanel::right("right_panel").resizable(false).show(ctx, |ui| {
+            self.show_info_panel(ui);
+            ui.separator();
+        });
+
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            self.show_footer(ui);
+        }); 
+    } 
     fn show_title_bar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.heading("ArtBox");
-            if ui.button(self.get_tool_title()).clicked() {
-                self.on_tool_selected();
+            if ui.button("CurrentTool").clicked() {
+                ui.label("Clicked");
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button("★").clicked() {
-                    self.on_icon_clicked();
+                    ui.label("Clicked");
                 }
                 if ui.button("⚙").clicked() {
-                    self.on_settings_clicked();
+                    ui.label("Clicked");
                 }
             });
         });
     }
-}
-
-pub trait MainViewTrait {
-    fn get_item_count(&self) -> usize;
-    fn get_item_label(&self, index: usize) -> String;
-    fn on_item_selected(&mut self, index: usize);
-    fn on_item_clicked(&mut self, index: usize);
-    fn show_main_view(&mut self, ui: &mut egui::Ui) {
+    fn show_main_panel(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::vertical().show(ui, |ui| {
             let mut current_row_count = 0;
             ui.horizontal_wrapped(|ui| {
-                for i in 0..self.get_item_count() {
-                    let button_label = self.get_item_label(i);
+                for i in 0..5 {
+                    let button_label = format!("Item {}", i);
                     let button = ui.button(&button_label);
 
                     if button.clicked() {
-                        self.on_item_clicked(i);
+                        // TODO: Implement item selection
                     }
 
                     current_row_count += 1;
@@ -57,12 +60,6 @@ pub trait MainViewTrait {
             });
         });
     }
-}
-
-pub trait InfoPanelTrait {
-    fn get_item(&self) -> Item;
-    fn get_item(&self) -> String;
-
     fn show_info_panel(&self, ui: &mut egui::Ui) {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
             ui.group(|ui| {
@@ -75,11 +72,8 @@ pub trait InfoPanelTrait {
         });
         
     }
-}
-
-pub trait FooterTrait {
-
     fn show_footer(&self, ui: &mut egui::Ui) {
         ui.label("Footer");
     }
 }
+
