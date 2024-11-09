@@ -1,5 +1,5 @@
-use crate::tools::tool_view::ToolView;
-use crate::shared::ui::ui_traits::UITrait;
+use crate::tools::Tool;
+use crate::tools::ToolUI;
 
 pub struct Item {
     name: String,
@@ -19,13 +19,13 @@ impl Item {
     }
 }
  
-pub struct SpriteLibraryView {
+pub struct SpriteLibrary {
     tool_name: String,
     sprite_count: usize,
     pub selected_sprite: Option<String>,
 }
 
-impl SpriteLibraryView {
+impl SpriteLibrary {
     pub fn new() -> Self {
         Self {
             tool_name: String::from("Sprite Library"),
@@ -35,10 +35,9 @@ impl SpriteLibraryView {
     }
 }
 
-impl ToolView for SpriteLibraryView {}
+impl Tool for SpriteLibrary {}
 
-
-impl UITrait for SpriteLibraryView {
+impl ToolUI for SpriteLibrary {
     
     fn show_main_panel(&mut self, ui: &mut egui::Ui) {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {

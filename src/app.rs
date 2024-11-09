@@ -1,16 +1,16 @@
 use eframe::egui;
-use crate::tools::tool_view::ToolView;
-use crate::tools::spritelibrary::sprite_library_view::SpriteLibraryView;
+use crate::tools::ToolUI;
+use crate::tools::sprite_library::SpriteLibrary;
 
 pub struct ArtBoxApp {
-    active_view: Box<dyn ToolView>
+    active_view: Box<dyn ToolUI>
 }
 
 impl ArtBoxApp {
     pub fn new() -> Self {
         ArtBoxApp {
             // TODO Add dynamic change to active view
-            active_view: Box::new(SpriteLibraryView::new()),
+            active_view: Box::new(SpriteLibrary::new()),
         }
     }
 }
