@@ -22,9 +22,26 @@ impl SpriteLibraryUI {
 impl ToolUI for SpriteLibraryUI {
     
     fn show_main_panel(&mut self, ui: &mut egui::Ui) {
-        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-            ui.label("Main Panel");
-        });
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            let mut current_row_count = 0;
+            ui.horizontal_wrapped(|ui| {
+                for i in 0..5 {
+                    let button_label = format!("Item {}", i);
+                    let button = ui.button(&button_label);
+
+                    if button.clicked() {
+                        // TODO: Implement item selection
+                    }
+
+                    current_row_count += 1;
+                    if current_row_count > 5 {
+                        ui.end_row();
+                        current_row_count = 0;
+                    }
+                }
+            });
+        }); 
+        
     } 
      
     fn show_info_panel(&self, ui: &mut egui::Ui) {
