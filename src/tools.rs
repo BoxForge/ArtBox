@@ -1,7 +1,7 @@
 pub mod sprite_library;
 
 use std::collections::HashMap;
-// use crate::tools::sprite_library::SpriteLibrary;
+use crate::tools::sprite_library::SpriteLibraryUI;
 
 
 // TOOLBOX
@@ -14,7 +14,7 @@ use std::collections::HashMap;
 // Stores all tools in a HashMap and keeps track of the active tool.
 
 pub struct ToolBox {
-    tools: HashMap<String, Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>>,
+    tools: HashMap<String, Box<Tool>>,
     active_tool: Option<String>
 }
 
@@ -28,7 +28,7 @@ impl ToolBox {
     }
 
     // Adds a tool to the ToolBox with a specific name. 
-    pub fn add_tool(&mut self, name: &str, tool: Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>) {
+    pub fn add_tool(&mut self, name: &str, tool: Box<Tool>) {
         self.tools.insert(name.to_string(), tool);
     }
 
@@ -38,7 +38,7 @@ impl ToolBox {
     }
 
     // Retrieves a mutable reference to the currently active tool. 
-    pub fn get_active_tool(&mut self) -> Option<&mut Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>> {
+    pub fn get_active_tool(&mut self) -> Option<&mut Box<Tool>> {
         if let Some(active_tool) = &self.active_tool {
             self.tools.get_mut(active_tool)
         } else {
@@ -69,12 +69,9 @@ impl ToolManager {
     }
 
     // Tool Creation Functions
-    
-    // Tool Creation Functions
     // Creates a new instance of the SpriteLibrary tool.
-    // TODO: Make this more flexible by allowing different configurations instead of using default. 
-    fn create_sprite_library() -> Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState> {
-        ToolBuilder::new().with_ui(DefaultToolUI {}).build()
+    fn create_sprite_library() -> Box<Tool> {
+        ToolBuilder::new().with_ui(Box::new(SpriteLibraryUI::new())).build()
     }
 
 
@@ -101,32 +98,24 @@ impl ToolManager {
  * Represents a single tool in the application, composed of multiple components.
  **************************************************/
 
-pub struct Tool<TUI, TLogic, TSettings, TData, TApi, TState> {
-    ui: TUI,
-    logic: TLogic,
-    settings: TSettings,
-    data: TData,
-    api: TApi,
-    state: TState
+pub struct Tool {
+    ui: Box< dyn ToolUI >,
+    logic: Box< dyn ToolLogic >,
+    settings: Box< dyn ToolSettings >,
+    data: Box< dyn ToolData >,
+    api: Box< dyn ToolApi >,
+    state: Box< dyn ToolState > 
 }
 
-impl<TUI, TLogic, TSettings, TData, TApi, TState> Tool<TUI, TLogic, TSettings, TData, TApi, TState> 
-where
-    TUI: ToolUI,
-    TLogic: ToolLogic,
-    TSettings: ToolSettings,
-    TData: ToolData,
-    TApi: ToolApi,
-    TState: ToolState
-{
+impl Tool {
     // Creates a new instance of a tool with its components. 
     pub fn new (
-        ui: TUI,
-        logic: TLogic,
-        settings: TSettings,
-        data: TData,
-        api: TApi,
-        state: TState,
+        ui: Box< dyn ToolUI >,
+        logic: Box< dyn ToolLogic >,
+        settings: Box< dyn ToolSettings >,
+        data: Box< dyn ToolData >,
+        api: Box< dyn ToolApi >,
+        state: Box< dyn ToolState >,
     ) -> Self {
         Tool { ui, logic, settings, data, api, state }
     }
@@ -162,20 +151,20 @@ where
  * Helps build tools step-by-step, allowing customization.
  **************************************************/ 
 
-pub struct ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> {
-    ui: Option<TUI>,
-    logic: Option<TLogic>,
-    settings: Option<TSettings>,
-    data: Option<TData>,
-    api: Option<TApi>,
-    state: Option<TState>
+pub struct ToolBuilder {
+    ui: Option <Box <dyn ToolUI>>,
+    logic: Option <Box <dyn ToolLogic>>,
+    settings: Option <Box <dyn ToolSettings>>,
+    data: Option <Box <dyn ToolData>>,
+    api: Option <Box <dyn ToolApi>>,
+    state: Option <Box <dyn ToolState>>,
 }
 
 
 // DEFAULT TOOL BUILDER
 // Default implementation for ToolBuilder (initializes without components). 
 
-impl ToolBuilder<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState> {
+impl ToolBuilder {
     pub fn new() -> Self {
         ToolBuilder {
             ui: None,
@@ -186,114 +175,46 @@ impl ToolBuilder<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultTo
             state: None
         }
     }
-}
 
-// CUSTOM TOOL BUILDER 
-// Custom implementation to add specific components to ToolBuilder.
-
-impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> { 
-    // Functions like `with_ui()`, `with_logic()`, etc., are used to add components step-by-step.
-    pub fn with_ui<U>(self, ui: U) -> ToolBuilder<U, TLogic, TSettings, TData, TApi, TState> 
-    where U: ToolUI, 
-    { 
-        ToolBuilder { 
-            ui: Some(ui),
-            logic: self.logic,
-            settings: self.settings,
-            data: self.data,
-            api: self.api,
-            state: self.state
-        }
+    pub fn with_ui(mut self, ui: Box<dyn ToolUI>) -> Self { 
+        self.ui = Some(ui);
+        self
     }
      
-    pub fn with_logic<L>(self, logic: L) -> ToolBuilder<TUI, L, TSettings, TData, TApi, TState> 
-    where L: ToolLogic 
-    {
-        ToolBuilder {
-            ui: self.ui,
-            logic: Some(logic),
-            settings: self.settings,
-            data: self.data,
-            api: self.api,
-            state: self.state
-        }
+    pub fn with_logic(mut self, logic: Box<dyn ToolLogic>) -> Self {
+        self.logic = Some(logic);
+        self
     }
 
-    pub fn with_settings<C>(self, settings: C) -> ToolBuilder<TUI, TLogic, C, TData, TApi, TState> 
-    where C: ToolSettings 
-    {
-        ToolBuilder {
-            ui: self.ui,
-            logic: self.logic,
-            settings: Some(settings),
-            data: self.data,
-            api: self.api,
-            state: self.state
-        }
+    pub fn with_settings(mut self, settings: Box<dyn ToolSettings>) -> Self {
+        self.settings = Some(settings);
+        self
     }
 
-    pub fn with_data<D>(self, data: D) -> ToolBuilder<TUI, TLogic, TSettings, D, TApi, TState> 
-    where D: ToolData 
-    {
-        ToolBuilder {
-            ui: self.ui,
-            logic: self.logic,
-            settings: self.settings,
-            data: Some(data),
-            api: self.api,
-            state: self.state
-        }
+    pub fn with_data(mut self, data: Box<dyn ToolData>) -> Self {
+        self.data = Some(data);
+        self
     }
 
-    pub fn with_api<A>(self, api: A) -> ToolBuilder<TUI, TLogic, TSettings, TData, A, TState> 
-    where A: ToolApi 
-    {
-        ToolBuilder {
-            ui: self.ui,
-            logic: self.logic,
-            settings: self.settings,
-            data: self.data,
-            api: Some(api),
-            state: self.state
-        }
+    pub fn with_api(mut self, api: Box<dyn ToolApi>) -> Self {
+        self.api = Some(api);
+        self
     }
 
-    pub fn with_state<S>(self, state: S) -> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, S> 
-    where S: ToolState 
-    {
-        ToolBuilder {
-            ui: self.ui,
-            logic: self.logic,
-            settings: self.settings,
-            data: self.data,
-            api: self.api,
-            state: Some(state)
-        }
+    pub fn with_state(mut self, state: Box<dyn ToolState>) -> Self {
+        self.state = Some(state);
+        self
     }
-}
 
-
-// TOOL BUILD
-// Builds the tool with all provided components or their default values. 
-
-impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> 
-where
-    TUI: ToolUI + Default,
-    TLogic: ToolLogic + Default,
-    TSettings: ToolSettings + Default,
-    TData: ToolData + Default,
-    TApi: ToolApi + Default,
-    TState: ToolState + Default
-{
-    pub fn build(self) -> Tool<TUI, TLogic, TSettings, TData, TApi, TState> {
-        Tool::new(
-            self.ui.unwrap_or_default(),
-            self.logic.unwrap_or_default(),
-            self.settings.unwrap_or_default(),
-            self.data.unwrap_or_default(),
-            self.api.unwrap_or_default(),
-            self.state.unwrap_or_default(),
-        )
+    pub fn build(self) -> Box<Tool> {
+        Box::new(Tool::new(
+            self.ui.unwrap_or_else(|| Box::new(DefaultToolUI {})),
+            self.logic.unwrap_or_else(|| Box::new(DefaultToolLogic {})),
+            self.settings.unwrap_or_else(|| Box::new(DefaultToolSettings {})),
+            self.data.unwrap_or_else(|| Box::new(DefaultToolData {})),
+            self.api.unwrap_or_else(|| Box::new(DefaultToolApi {})),
+            self.state.unwrap_or_else(|| Box::new(DefaultToolState {})),
+        ))
     }
 }
 
@@ -426,4 +347,5 @@ pub trait ToolState {
 /**************************************************
  * TODOs for Future Implementation:
  * - Rework `ToolBuilder::build()` to support non-default (custom) types.
+ * - Figure out how to acheive more private components.
  *************************************************/

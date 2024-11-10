@@ -1,41 +1,25 @@
-// use crate::tools::Tool;
 use crate::tools::ToolUI;
 
-pub struct Item {
-    name: String,
-    created_date: String,
-    updated_date: String,
-    tags: Vec<String>,
-}
-
-impl Item {
-    pub fn new() -> Self {
-        Item {
-            name: String::from("Lorem Ipsum"),
-            created_date: String::from("09-99-9999"),
-            updated_date: String::from("99-99-9999"),
-            tags: vec![String::from("Dorem"), String::from("Dolem")]
-        }
-    }
-}
+// -----------------------------------
+// Sprite Library UI Component
+// -----------------------------------
  
-pub struct SpriteLibrary {
-    tool_name: String,
+#[derive(Default)]
+pub struct SpriteLibraryUI {
     sprite_count: usize,
-    pub selected_sprite: Option<String>,
+    selected_sprite: Option<String>,
 }
 
-impl SpriteLibrary {
+impl SpriteLibraryUI {
     pub fn new() -> Self {
         Self {
-            tool_name: String::from("Sprite Library"),
             sprite_count: 10,
-            selected_sprite: None
+            selected_sprite: None,
         }
     }
 }
 
-impl ToolUI for SpriteLibrary {
+impl ToolUI for SpriteLibraryUI {
     
     fn show_main_panel(&mut self, ui: &mut egui::Ui) {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
@@ -73,4 +57,27 @@ impl ToolUI for SpriteLibrary {
         ui.label("Footer");
     } 
      
+}
+
+
+// -----------------------------------
+// Shared Data Structures
+// -----------------------------------
+
+pub struct Item {
+    name: String,
+    created_date: String,
+    updated_date: String,
+    tags: Vec<String>,
+}
+
+impl Item {
+    pub fn new() -> Self {
+        Item {
+            name: String::from("Lorem Ipsum"),
+            created_date: String::from("09-99-9999"),
+            updated_date: String::from("99-99-9999"),
+            tags: vec![String::from("Dorem"), String::from("Dolem")]
+        }
+    }
 }
