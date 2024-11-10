@@ -1,23 +1,23 @@
 use eframe::egui;
-use crate::tools::ToolUI;
-use crate::tools::sprite_library::SpriteLibrary;
+use crate::tools::ToolBox;
 
 pub struct ArtBoxApp {
-    active_view: Box<dyn ToolUI>
+    toolbox: ToolBox
 }
 
 impl ArtBoxApp {
-    pub fn new() -> Self {
-        ArtBoxApp {
-            // TODO Add dynamic change to active view
-            active_view: Box::new(SpriteLibrary::new()),
-        }
+    pub fn new(toolbox: ToolBox) -> Self {
+        ArtBoxApp { toolbox }
     }
 }
 
 impl eframe::App for ArtBoxApp {
+     
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.active_view.show_ui(ctx);
+         
+        if let Some(active_tool) = self.toolbox.get_active_tool() {
+            active_tool.show_ui(ctx);
+        }
         
     }
 }

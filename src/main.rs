@@ -3,13 +3,16 @@ mod shared;
 mod tools;
 
 fn main() -> Result<(), eframe::Error>{
+    let tool_manager = tools::ToolManager::new();
+    let toolbox = tool_manager.initialize_tools();
+
     let options = eframe::NativeOptions::default();
     eframe::run_native(
         "ArtBox",
         options,
         Box::new(|cc| {
             setup_custom_fonts(&cc.egui_ctx);
-            Ok(Box::new(app::ArtBoxApp::new()))
+            Ok(Box::new(app::ArtBoxApp::new(toolbox)))
         }),
     )?;
     Ok(())

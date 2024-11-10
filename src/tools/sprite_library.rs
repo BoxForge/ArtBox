@@ -1,4 +1,4 @@
-use crate::tools::Tool;
+// use crate::tools::Tool;
 use crate::tools::ToolUI;
 
 pub struct Item {
@@ -34,8 +34,6 @@ impl SpriteLibrary {
         }
     }
 }
-
-impl Tool for SpriteLibrary {}
 
 impl ToolUI for SpriteLibrary {
     

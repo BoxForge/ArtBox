@@ -1,9 +1,107 @@
 pub mod sprite_library;
 
-// TODO: Add ToolManager up here
+use std::collections::HashMap;
+// use crate::tools::sprite_library::SpriteLibrary;
 
-#[allow(dead_code)]
-struct Tool<TUI, TLogic, TSettings, TData, TApi, TState> {
+
+// TOOLBOX
+
+/**************************************************
+ * ToolBox Struct (Tool Storage)
+ * Manages all tool instances, stores and activates tools.
+ **************************************************/
+
+// Stores all tools in a HashMap and keeps track of the active tool.
+
+pub struct ToolBox {
+    tools: HashMap<String, Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>>,
+    active_tool: Option<String>
+}
+
+impl ToolBox {
+    // Creates a new, empty ToolBox. 
+    pub fn new() -> Self {
+        ToolBox {
+            tools: HashMap::new(),
+            active_tool: None
+        }
+    }
+
+    // Adds a tool to the ToolBox with a specific name. 
+    pub fn add_tool(&mut self, name: &str, tool: Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>) {
+        self.tools.insert(name.to_string(), tool);
+    }
+
+    // Sets a tool as active based on its name. 
+    pub fn set_active_tool(&mut self, name: &str) {
+        self.active_tool = Some(name.to_string());
+    }
+
+    // Retrieves a mutable reference to the currently active tool. 
+    pub fn get_active_tool(&mut self) -> Option<&mut Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState>> {
+        if let Some(active_tool) = &self.active_tool {
+            self.tools.get_mut(active_tool)
+        } else {
+            None
+        }
+    }
+
+    // Lists all the tools by their names. 
+    pub fn list_tools(&self) -> Vec<String> {
+        self.tools.keys().cloned().collect()
+    }
+}
+
+
+// TOOL MANAGER
+
+/**************************************************
+ * ToolManager Struct (Tool Creation and Management)
+ * Handles creation of tools and manages tool initialization.
+ **************************************************/
+
+pub struct ToolManager;
+
+impl ToolManager {
+    // Creates a new instance of ToolManager (singleton-like behavior). 
+    pub fn new() -> Self {
+        ToolManager {}
+    }
+
+    // Tool Creation Functions
+    
+    // Tool Creation Functions
+    // Creates a new instance of the SpriteLibrary tool.
+    // TODO: Make this more flexible by allowing different configurations instead of using default. 
+    fn create_sprite_library() -> Tool<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState> {
+        ToolBuilder::new().with_ui(DefaultToolUI {}).build()
+    }
+
+
+    // ToolBox Initialization
+    // Initializes the ToolBox with a set of predefined tools. 
+    pub fn initialize_tools(&self) -> ToolBox {
+        let mut toolbox = ToolBox::new();
+
+        // Add Tools to ToolBox
+        toolbox.add_tool("Sprite Library", Self::create_sprite_library());
+
+        // Set Active Tool
+        toolbox.set_active_tool("Sprite Library");
+
+        toolbox
+    }
+}
+
+
+// TOOL STRUCT
+
+ /**************************************************
+ * Tool Struct and Implementation
+ * Represents a single tool in the application, composed of multiple components.
+ **************************************************/
+
+pub struct Tool<TUI, TLogic, TSettings, TData, TApi, TState> {
     ui: TUI,
     logic: TLogic,
     settings: TSettings,
@@ -12,7 +110,6 @@ struct Tool<TUI, TLogic, TSettings, TData, TApi, TState> {
     state: TState
 }
 
-#[allow(dead_code)]
 impl<TUI, TLogic, TSettings, TData, TApi, TState> Tool<TUI, TLogic, TSettings, TData, TApi, TState> 
 where
     TUI: ToolUI,
@@ -22,6 +119,7 @@ where
     TApi: ToolApi,
     TState: ToolState
 {
+    // Creates a new instance of a tool with its components. 
     pub fn new (
         ui: TUI,
         logic: TLogic,
@@ -32,9 +130,37 @@ where
     ) -> Self {
         Tool { ui, logic, settings, data, api, state }
     }
+
+    // Displays the tool's UI (calls the appropriate `show_*` functions). 
+    pub fn show_ui(&mut self, ctx: &egui::Context) {
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            self.ui.show_title_bar(ui);
+            ui.separator();
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            self.ui.show_main_panel(ui);
+            ui.separator();
+        });
+
+        egui::SidePanel::right("right_panel").resizable(false).show(ctx, |ui| {
+            self.ui.show_info_panel(ui);
+            ui.separator();
+        });
+
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            self.ui.show_footer(ui);
+        }); 
+    } 
 }
 
+
 // TOOL BUILDER
+
+/**************************************************
+ * ToolBuilder Struct (Tool Construction)
+ * Helps build tools step-by-step, allowing customization.
+ **************************************************/ 
 
 pub struct ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> {
     ui: Option<TUI>,
@@ -45,7 +171,10 @@ pub struct ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> {
     state: Option<TState>
 }
 
+
 // DEFAULT TOOL BUILDER
+// Default implementation for ToolBuilder (initializes without components). 
+
 impl ToolBuilder<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultToolData, DefaultToolApi, DefaultToolState> {
     pub fn new() -> Self {
         ToolBuilder {
@@ -60,10 +189,12 @@ impl ToolBuilder<DefaultToolUI, DefaultToolLogic, DefaultToolSettings, DefaultTo
 }
 
 // CUSTOM TOOL BUILDER 
+// Custom implementation to add specific components to ToolBuilder.
+
 impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> { 
-    // Function that builds a custom implementation of ToolUI 
-    pub fn with_ui<U>(self, ui: TUI) -> ToolBuilder<U, TLogic, TSettings, TData, TApi, TState> 
-    where U: ToolUI 
+    // Functions like `with_ui()`, `with_logic()`, etc., are used to add components step-by-step.
+    pub fn with_ui<U>(self, ui: U) -> ToolBuilder<U, TLogic, TSettings, TData, TApi, TState> 
+    where U: ToolUI, 
     { 
         ToolBuilder { 
             ui: Some(ui),
@@ -75,8 +206,7 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
         }
     }
      
-    // Function that builds a custom implementation of ToolLogic 
-    pub fn with_logic<L>(self, logic: TLogic) -> ToolBuilder<TUI, L, TSettings, TData, TApi, TState> 
+    pub fn with_logic<L>(self, logic: L) -> ToolBuilder<TUI, L, TSettings, TData, TApi, TState> 
     where L: ToolLogic 
     {
         ToolBuilder {
@@ -89,9 +219,8 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
         }
     }
 
-    // Function that builds a custom implementation of ToolSettings 
-    pub fn with_settings<S>(self, settings: TSettings) -> ToolBuilder<TUI, TLogic, S, TData, TApi, TState> 
-    where S: ToolSettings 
+    pub fn with_settings<C>(self, settings: C) -> ToolBuilder<TUI, TLogic, C, TData, TApi, TState> 
+    where C: ToolSettings 
     {
         ToolBuilder {
             ui: self.ui,
@@ -103,8 +232,7 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
         }
     }
 
-    // Function that builds a custom implementation of ToolData 
-    pub fn with_data<D>(self, data: TData) -> ToolBuilder<TUI, TLogic, TSettings, D, TApi, TState> 
+    pub fn with_data<D>(self, data: D) -> ToolBuilder<TUI, TLogic, TSettings, D, TApi, TState> 
     where D: ToolData 
     {
         ToolBuilder {
@@ -117,8 +245,7 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
         }
     }
 
-    // Function that builds a custom implementation of ToolApi
-    pub fn with_api<A>(self, api: TApi) -> ToolBuilder<TUI, TLogic, TSettings, TData, A, TState> 
+    pub fn with_api<A>(self, api: A) -> ToolBuilder<TUI, TLogic, TSettings, TData, A, TState> 
     where A: ToolApi 
     {
         ToolBuilder {
@@ -131,8 +258,7 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
         }
     }
 
-    // Function that builds a custom implementation of ToolState
-    pub fn with_state<S>(self, state: TState) -> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, S> 
+    pub fn with_state<S>(self, state: S) -> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, S> 
     where S: ToolState 
     {
         ToolBuilder {
@@ -146,7 +272,10 @@ impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSett
     }
 }
 
+
 // TOOL BUILD
+// Builds the tool with all provided components or their default values. 
+
 impl<TUI, TLogic, TSettings, TData, TApi, TState> ToolBuilder<TUI, TLogic, TSettings, TData, TApi, TState> 
 where
     TUI: ToolUI + Default,
@@ -168,7 +297,15 @@ where
     }
 }
 
+
 // DEFAULT COMPONENTS
+
+/**************************************************
+ * Default Components and Macros (Tool Defaults)
+ * Provides default implementations for Tool components.
+ **************************************************/
+
+// A macro to define default structs for each component. 
 
 macro_rules! default_component {
     ($name:ident, $trait:ident) => {
@@ -194,6 +331,7 @@ macro_rules! default_component {
     };
 }
 
+// Defining default components for each tool trait.
 default_component!(DefaultToolUI, ToolUI);
 default_component!(DefaultToolLogic, ToolLogic);
 default_component!(DefaultToolSettings, ToolSettings);
@@ -201,29 +339,15 @@ default_component!(DefaultToolData, ToolData);
 default_component!(DefaultToolApi, ToolApi);
 default_component!(DefaultToolState, ToolState);
 
+
 // TOOL TRAITS
+/**************************************************
+ * Tool Traits (Interfaces for Tool Components)
+ * Defines the common interface for UI, Logic, Settings, etc.
+ **************************************************/ 
 
 pub trait ToolUI {
-   fn show_ui(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            self.show_title_bar(ui);
-            ui.separator();
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            self.show_main_panel(ui);
-            ui.separator();
-        });
-
-        egui::SidePanel::right("right_panel").resizable(false).show(ctx, |ui| {
-            self.show_info_panel(ui);
-            ui.separator();
-        });
-
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            self.show_footer(ui);
-        }); 
-    } 
+    
     fn show_title_bar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.heading("ArtBox");
@@ -279,22 +403,27 @@ pub trait ToolUI {
 }
 
 
-trait ToolLogic {
+pub trait ToolLogic {
     // TODO: Add default tool logic
 }
 
-trait ToolSettings {
+pub trait ToolSettings {
     // TODO: Add default tool settings
 }
 
-trait ToolData {
+pub trait ToolData {
     // TODO: Add default tool data
 }
 
-trait ToolApi {
+pub trait ToolApi {
     // TODO: Add default tool api
 }
 
-trait ToolState {
+pub trait ToolState {
     // TODO: Add default tool state
 }
+ 
+/**************************************************
+ * TODOs for Future Implementation:
+ * - Rework `ToolBuilder::build()` to support non-default (custom) types.
+ *************************************************/
