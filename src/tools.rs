@@ -308,28 +308,63 @@ pub trait ToolUI {
 }
 
 
+#[allow(dead_code)]
 pub trait ToolLogic {
-    // TODO: Add default tool logic
+    // TODO: Replace Placeholder with actual logic 
+     fn describe_state(&self) {
+        println!("This tool is in its default state.");
+    }
+
+    fn run_logic(&mut self) {
+        println!("Running default logic...");
+    } 
 }
 
+#[allow(dead_code)]
 pub trait ToolSettings {
-    // TODO: Add default tool settings
+    // TODO: Replace Placeholder with actual settings
+    fn show_settings(&self) {
+        println!("Displaying default settings...");
+    }
+
+    fn modify_setting(&mut self, setting: &str, value: &str) {
+        println!("Modifying setting: {} to value: {}", setting, value);
+    } 
 }
 
+#[allow(dead_code)]
 pub trait ToolData {
-    // TODO: Add default tool data
+    // TODO: Replace Placeholder with actual data fetching
+    fn save_data(&self) {
+        println!("Saving default data...");
+    }
+
+    fn load_data(&self) {
+        println!("Loading default data...");
+    } 
 }
 
+#[allow(dead_code)]
 pub trait ToolApi {
-    // TODO: Add default tool api
+    // TODO: Replace Placeholder with actual API calls
+    fn interact(&self, other_tool_name: &str) {
+        println!("Interacting with tool: {}", other_tool_name);
+    } 
 }
 
+#[allow(dead_code)]
 pub trait ToolState {
-    // TODO: Add default tool state
+    // TODO: Replace Placeholder with actual state
+    fn toggle_active(&mut self) {
+        println!("Toggling active state...");
+    }
+
+    fn show_state(&self) {
+        println!("The tool is in its default state.");
+    } 
 }
  
 /**************************************************
  * TODOs for Future Implementation:
- * - Rework `ToolBuilder::build()` to support non-default (custom) types.
  * - Figure out how to acheive more private components.
  *************************************************/
