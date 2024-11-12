@@ -1,2 +1,2 @@
-pub mod datahandler;
+pub mod data;
 pub mod ui;
