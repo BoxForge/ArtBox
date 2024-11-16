@@ -1,3 +1,4 @@
 /target
 /src/shared/data/assets.db
 
+*.txt
